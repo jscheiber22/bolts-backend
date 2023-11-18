@@ -13,8 +13,30 @@ def get_db_connection():
     return conn, curr
 
 
+@app.route('/api/projects/<id>', methods=['GET'])
+def GetProjectData(id):
+    conn, curr = get_db_connection()
+    project_data = curr.execute('SELECT * FROM Cars WHERE ID={}'.format(id)).fetchone()
+    conn.close()
+
+    return jsonify(project_data)
+
+@app.route('/api/projects/<id>', methods=['PATCH'])
+def PatchProjectData(id):
+    print("this")
+    update_data = request.get_json()
+    print(update_data)
+    conn, curr = get_db_connection()
+    for item in update_data:
+        curr.execute('''UPDATE Cars SET {} = {} WHERE id={}'''.format(item, update_data[item], id))
+    conn.commit()
+    conn.close()
+
+    return "0"
+
+
 @app.route('/api/projects', methods=['GET'])
-def Projects():
+def GetAllProjectData():
     conn, curr = get_db_connection()
     projects = curr.execute('SELECT * FROM Cars').fetchall()
     conn.close()
@@ -23,7 +45,7 @@ def Projects():
 
 
 @app.route('/api/projects', methods=['POST'])
-def NewProject():
+def PostNewProject():
     uploaded_file = request.files.get('file')
     if uploaded_file:
         image_data = uploaded_file.read()
@@ -31,7 +53,8 @@ def NewProject():
     car_data = json.loads(request.form['car_details'])
 
     conn, curr = get_db_connection()
-    curr.execute('''INSERT INTO Cars(Make, Model, Year, Misc_Info, Image) VALUES ('{}', '{}', {}, '{}', '{}')'''.format(car_data["Make"], car_data["Model"], int(car_data["Year"]), car_data["Description"], encoded_image_data))
+    # Adds new data to database, defaulting the favorite option to 0 for False
+    curr.execute('''INSERT INTO Cars(Make, Model, Year, Misc_Info, Image, Favorite) VALUES ('{}', '{}', {}, '{}', '{}', 0)'''.format(car_data["Make"], car_data["Model"], int(car_data["Year"]), car_data["Description"], encoded_image_data))
     
     conn.commit()
     conn.close()
@@ -53,7 +76,7 @@ def DelProject(id):
 
     finally:
         return "0"
-
+    
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc")
