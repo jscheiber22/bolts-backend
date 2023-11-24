@@ -21,6 +21,7 @@ def GetProjectData(id):
 
     return jsonify(project_data)
 
+
 @app.route('/api/projects/<id>', methods=['PATCH'])
 def PatchProjectData(id):
     print("this")
@@ -76,7 +77,19 @@ def DelProject(id):
 
     finally:
         return "0"
-    
+
+
+# combine this with the get project data by id function
+@app.route('/api/locations/<id>', methods=['GET'])
+def GetLocationData(id):
+    conn, curr = get_db_connection()
+    project_data = curr.execute('SELECT * FROM Locations WHERE Car_ID={}'.format(id)).fetchall()
+    # print(project_data)
+    conn.close()
+
+    return jsonify(project_data)
+
+
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc")
