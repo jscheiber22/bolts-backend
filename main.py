@@ -90,6 +90,36 @@ def GetLocationData(id):
     return jsonify(project_data)
 
 
+@app.route('/api/locations/<id>', methods=['POST'])
+def AddLocationData(id):
+    update_data = request.get_json()
+
+    conn, curr = get_db_connection()
+    # Adds new data to database, defaulting the favorite option to 0 for False
+    curr.execute('''INSERT INTO Locations(Name, Description, Image, Car_ID) VALUES ('{}', '', '', '{}')'''.format(update_data["Name"], id))
+    
+    conn.commit()
+    conn.close()
+
+    return "0"
+
+
+@app.route('/api/del_location/<location_id>', methods=['POST'])
+def DelLocation(location_id):
+    try:
+        conn, curr = get_db_connection()
+        curr.execute('''DELETE FROM Locations WHERE ID={}'''.format(location_id))
+
+        conn.commit()
+        conn.close()
+
+    except:
+        raise
+
+    finally:
+        return "0"
+
+
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc")
